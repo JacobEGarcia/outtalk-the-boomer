@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Outtalk the Boomer - Meeting Room Boss Battle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Archivo:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3eddf; --card:#fdfaf2; --line:#ded3ba; --line2:#cbbd9c;
+  --ink:#33302a; --dim:#8d8470; --faint:#b0a78e;
+  --red:#b03a2c; --gold:#a4762a; --green:#5f7a45;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'Archivo',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:36px 16px 56px}
+.wrap{width:min(640px,95vw)}
+header{text-align:center}
+.stamp{display:inline-block;border:2px solid var(--red);color:var(--red);font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:5px 12px;border-radius:3px;transform:rotate(-2deg);margin-bottom:14px}
+h1{font-family:'Libre Caslon Text',serif;font-size:32px;font-weight:700;letter-spacing:-.3px}
+.sub{color:var(--dim);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-top:8px;font-weight:600}
+#boss{margin:24px auto 0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 20px 18px;box-shadow:0 1px 0 rgba(51,48,42,.06)}
+#bossFace{display:flex;justify-content:center}
+.bossname{font-family:'Libre Caslon Text',serif;font-style:italic;font-size:14px;color:var(--dim);margin-top:8px}
+#bossBar{width:min(320px,80vw);height:8px;background:#ece4d0;border:1px solid var(--line2);border-radius:5px;margin:12px auto 0;overflow:hidden}
+#bossHp{height:100%;background:var(--red);transition:width .35s ease}
+.bossbarlbl{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--faint);margin-top:6px;font-weight:700}
+#hud{display:flex;justify-content:center;gap:26px;margin:18px 0 4px;font-size:12px;color:var(--dim);letter-spacing:1.4px;text-transform:uppercase;font-weight:600}
+#hud b{color:var(--red);font-variant-numeric:tabular-nums}
+#dialog{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;min-height:88px;font-size:16px;line-height:1.7;font-family:'Libre Caslon Text',serif;box-shadow:0 1px 0 rgba(51,48,42,.06)}
+#dialog .who{font-family:'Archivo',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);font-weight:700;display:block;margin-bottom:8px}
+#dialog q{quotes:"\201C" "\201D"}
+#choices{display:grid;gap:8px;margin-top:12px}
+button{cursor:pointer;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:14px 16px;font-family:inherit;font-size:14px;font-weight:600;text-align:left;transition:border-color .15s,transform .15s;display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+button:hover{border-color:var(--red);transform:translateX(3px)}
+button small{color:var(--faint);font-size:11px;font-weight:600;letter-spacing:.4px;flex:none}
+#log{margin-top:16px;font-size:12px;color:var(--dim);line-height:1.8;font-style:italic;font-family:'Libre Caslon Text',serif}
+#log div b{color:var(--red);font-style:normal}
+footer{margin-top:26px;color:var(--faint);font-size:10.5px;letter-spacing:1.8px;text-transform:uppercase;text-align:center;font-weight:700}
+@media(max-width:560px){button{flex-direction:column;gap:3px}h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="stamp">Meeting Room B &middot; 4:45 PM</div>
+  <h1>Outtalk the Boomer</h1>
+  <div class="sub">A boss battle &middot; no fists, only rhetoric</div>
+</header>
+<div id="boss">
+  <div id="bossFace"></div>
+  <div class="bossname">Gary &middot; has opinions about your generation</div>
+  <div id="bossBar"><div id="bossHp" style="width:100%"></div></div>
+  <div class="bossbarlbl">Gary&rsquo;s certainty</div>
+</div>
+<div id="hud"></div>
+<div id="dialog"></div>
+<div id="choices"></div>
+<div id="log"></div>
+<footer>est. every Thanksgiving since forever</footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const S={hp:100,patience:100,round:1,over:false};
+const FACE={
+ calm:'<svg width="110" height="110" viewBox="0 0 110 110" fill="none"><circle cx="55" cy="52" r="34" fill="#f0d5b0" stroke="#cbbd9c" stroke-width="2"/><rect x="31" y="42" width="20" height="15" rx="6" fill="none" stroke="#33302a" stroke-width="2.5"/><rect x="59" y="42" width="20" height="15" rx="6" fill="none" stroke="#33302a" stroke-width="2.5"/><line x1="51" y1="48" x2="59" y2="48" stroke="#33302a" stroke-width="2.5"/><circle cx="41" cy="49" r="2.4" fill="#33302a"/><circle cx="69" cy="49" r="2.4" fill="#33302a"/><path d="M33 36 q8 -5 16 -2 M61 34 q8 -3 16 2" stroke="#9a9284" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M41 68 q14 8 28 0" stroke="#33302a" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M38 74 q17 12 34 0 q-4 10 -17 10 q-13 0 -17 -10z" fill="#fbf7ec" stroke="#cbbd9c" stroke-width="1.5"/><path d="M30 22 q25 -14 50 0 l-4 8 q-21 -11 -42 0 z" fill="#9a9284"/></svg>',
+ annoy:'<svg width="110" height="110" viewBox="0 0 110 110" fill="none"><circle cx="55" cy="52" r="34" fill="#f0d5b0" stroke="#cbbd9c" stroke-width="2"/><rect x="31" y="42" width="20" height="15" rx="6" fill="none" stroke="#33302a" stroke-width="2.5"/><rect x="59" y="42" width="20" height="15" rx="6" fill="none" stroke="#33302a" stroke-width="2.5"/><line x1="51" y1="48" x2="59" y2="48" stroke="#33302a" stroke-width="2.5"/><circle cx="41" cy="50" r="2.4" fill="#33302a"/><circle cx="69" cy="50" r="2.4" fill="#33302a"/><path d="M33 33 l16 5 M77 33 l-16 5" stroke="#9a9284" stroke-width="3.5" stroke-linecap="round"/><path d="M41 72 q14 -6 28 0" stroke="#33302a" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M38 76 q17 10 34 0 q-4 9 -17 9 q-13 0 -17 -9z" fill="#fbf7ec" stroke="#cbbd9c" stroke-width="1.5"/><path d="M30 22 q25 -14 50 0 l-4 8 q-21 -11 -42 0 z" fill="#9a9284"/></svg>',
+ shook:'<svg width="110" height="110" viewBox="0 0 110 110" fill="none"><circle cx="55" cy="52" r="34" fill="#f0d5b0" stroke="#cbbd9c" stroke-width="2"/><rect x="31" y="42" width="20" height="15" rx="6" fill="none" stroke="#33302a" stroke-width="2.5"/><rect x="59" y="42" width="20" height="15" rx="6" fill="none" stroke="#33302a" stroke-width="2.5"/><line x1="51" y1="48" x2="59" y2="48" stroke="#33302a" stroke-width="2.5"/><circle cx="41" cy="49" r="3.4" fill="#fff" stroke="#33302a" stroke-width="1.5"/><circle cx="69" cy="49" r="3.4" fill="#fff" stroke="#33302a" stroke-width="1.5"/><path d="M33 30 q8 -4 16 -1 M61 29 q8 -3 16 1" stroke="#9a9284" stroke-width="3.5" fill="none" stroke-linecap="round"/><ellipse cx="55" cy="71" rx="7" ry="9" fill="#33302a"/><path d="M38 79 q17 9 34 0 q-4 8 -17 8 q-13 0 -17 -8z" fill="#fbf7ec" stroke="#cbbd9c" stroke-width="1.5"/><path d="M30 22 q25 -14 50 0 l-4 8 q-21 -11 -42 0 z" fill="#9a9284"/></svg>'
+};
+const ATTACKS=[
+ ['Back in my day, we bought houses on ONE income.',[['Cite price-to-income ratios, calmly','dmg 22',22],['Nod and say "wild times"','dmg 8, patience -4',8],['Ask how much his degree cost','dmg 30, risky',30]]],
+ ['Nobody wants to work anymore.',[['Point at the three jobs you currently hold','dmg 25',25],['Sigh audibly','dmg 6',6],['Ask what "work" means to him','dmg 18, philosophical',18]]],
+ ['You kids and your avocados.',[['Present a detailed brunch budget spreadsheet','dmg 24',24],['Offer him a bite of the toast','dmg 12, disarming',12],['Concede the toast is, in fact, great','dmg 5, patience +6',5]]],
+ ['Just walk in and give the manager a firm handshake.',[['Explain that the manager is an algorithm now','dmg 26',26],['Demonstrate your handshake','dmg 10, respectful',10],['Ask when he last applied for a job','dmg 20',20]]],
+ ['The Wi-Fi is a conspiracy against this house.',[['Fix the router while he watches','dmg 28, legend status',28],['Suggest turning it off and on','dmg 15',15],['Agree it is suspicious','dmg 4',4]]]];
+function clamp(x){return Math.max(0,Math.min(100,x))}
+function hud(){$('hud').innerHTML='<span>Round <b>'+S.round+'</b></span><span>Your patience <b>'+S.patience+'%</b></span>';
+ $('bossHp').style.width=S.hp+'%';
+ $('bossFace').innerHTML=S.hp>66?FACE.calm:S.hp>33?FACE.annoy:FACE.shook;}
+function log(t,c){const d=document.createElement('div');d.innerHTML=t;if(c)d.style.color=c;$('log').prepend(d);}
+function render(){
+ hud();if(S.over)return;
+ const a=ATTACKS[Math.floor(Math.random()*ATTACKS.length)];
+ $('dialog').innerHTML='<span class="who">Gary says</span><q>'+a[0]+'</q>';
+ $('choices').innerHTML='';
+ a[1].forEach(o=>{
+  const b=document.createElement('button');
+  b.innerHTML='<span>'+o[0]+'</span><small>'+o[1]+'</small>';
+  b.onclick=()=>{
+   S.hp-=o[2];S.patience-=8;S.hp=clamp(S.hp);S.patience=clamp(S.patience);
+   log('<b>Round '+S.round+':</b> &ldquo;'+o[0]+'&rdquo; dealt '+o[2]+' rhetorical damage.');
+   S.round++;
+   if(S.hp<=0){end(true,'Gary leans back. &ldquo;&hellip;You make some fair points, kid.&rdquo; He asks you to fix his phone. You have won, and the prize is tech support forever.');}
+   else if(S.patience<=0){end(false,'Your patience hits zero. You excuse yourself to &ldquo;get water&rdquo; and simply leave the state. Gary remains undefeated at Thanksgiving.');}
+   else render();};
+  $('choices').appendChild(b);});}
+function end(win,msg){S.over=true;$('dialog').innerHTML='<span class="who">'+(win?'Victory':'Retreat')+'</span>'+msg;
+ $('choices').innerHTML='';const b=document.createElement('button');
+ b.innerHTML='<span>Another family dinner</span>';b.onclick=()=>{Object.assign(S,{hp:100,patience:100,round:1,over:false});$('log').innerHTML='';render();};
+ $('choices').appendChild(b);log(msg,win?'var(--green)':'var(--red)');}
+render();
+</script>
+</body>
+</html>
